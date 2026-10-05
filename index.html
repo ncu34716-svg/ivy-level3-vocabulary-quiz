@@ -1,138 +1,73 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>常春藤 Level 3｜英文單字線上測驗</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>英文單字總題庫</title>
 <style>
-body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;margin:0;background:#f7f8fb;color:#1f2937}
-.wrap{max-width:920px;margin:auto;padding:24px}
-.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06);margin-bottom:16px}
-h1{font-size:28px;margin:0 0 8px}.muted{color:#6b7280}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-select,button{font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid #d1d5db;background:white}
-button.primary{background:#2563eb;color:#fff;border-color:#2563eb;cursor:pointer}
-button.secondary{cursor:pointer}.stats{display:flex;gap:12px;flex-wrap:wrap}.pill{background:#eef2ff;padding:8px 12px;border-radius:999px}
-.question{font-size:22px;line-height:1.55;margin:12px 0 18px}
-.option{display:block;width:100%;text-align:left;margin:10px 0;padding:14px;border-radius:12px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
-.option.correct{background:#dcfce7;border-color:#16a34a}.option.wrong{background:#fee2e2;border-color:#dc2626}
-.explain h3{margin:14px 0 6px}.explain p{margin:6px 0;line-height:1.6}.hidden{display:none}
-.unitnav{display:flex;gap:8px;flex-wrap:wrap}.unit{padding:8px 12px;border-radius:10px;background:#eef2f7}.unit.active{background:#dbeafe}.unit.off{opacity:.5}
-footer{font-size:14px;color:#6b7280;padding:8px 0 24px}
-</style>
-</head>
-<body>
-<div class="wrap">
-<div class="card">
-<h1>常春藤 Level 3｜英文單字線上測驗</h1>
-<p class="muted">Unit 01 原書第 1–10 頁。字義與重要搭配依教材整理；測驗例句為練習用新編句。</p>
-<div class="unitnav">
-<span class="unit active">U01</span><span class="unit off">U02 建置中</span><span class="unit off">U03 建置中</span><span class="unit off">U04 建置中</span><span class="unit off">U05 建置中</span><span class="unit off">U06 建置中</span><span class="unit off">U07 建置中</span><span class="unit off">U08 建置中</span>
-</div>
-</div>
-<div class="card">
-<div class="row">
-<label>題型
-<select id="mode"><option value="sentence">句子選字</option><option value="meaning">英翻中</option><option value="mixed">混合</option></select></label>
-<label>題數
-<select id="count"><option>10</option><option>20</option><option>30</option><option>50</option><option value="all">全部</option></select></label>
-<button class="primary" id="start">開始測驗</button>
-<button class="secondary" id="retry">錯題重考</button>
-</div>
-</div>
-<div id="quiz" class="card hidden">
-<div class="stats"><span class="pill" id="progress"></span><span class="pill" id="score"></span><span class="pill" id="wrongcount"></span></div>
-<div id="q" class="question"></div><div id="opts"></div>
-<div id="exp" class="explain hidden"></div>
-<button id="next" class="primary hidden">下一題</button>
-</div>
-<footer>錯題與最近成績儲存在目前瀏覽器（localStorage），不需登入。</footer>
-</div>
-<script>
-const V=[
-["unite","聯合；使團結","The two clubs decided to ______ to organize the charity event.","兩個社團決定聯合起來籌辦這場慈善活動。","unite A and B；unite with","unity 團結；union 聯合／聯盟／工會"],
-["remain","保持；仍然是；留下","Even after the argument, they managed to ______ friends.","即使爭吵過後，他們仍然維持朋友關係。","remain + adj./n.","remaining 剩餘的；remains 遺跡／遺骸"],
-["probable","很可能的","It is ______ that the outdoor concert will be canceled because of the storm.","戶外演唱會很可能因暴風雨而取消。","It is probable that...","probably 很可能；probability 可能性"],
-["likely","很可能的","It seems ______ that food prices will rise again next year.","看來明年食物價格很可能再次上漲。","It is/seems likely that...","likelihood 可能性"],
-["situation","情況；局勢","What would you do in such a difficult ______?","遇到這麼困難的情況，你會怎麼做？","in such a situation","—"],
-["determine","決定；確定","The police are trying to ______ the cause of the accident.","警方正試圖確定事故原因。","determine + N；determine to + V","determination 決心；determined 下定決心的"],
-["rate","比率；速度","The unemployment ______ has fallen slightly this year.","今年的失業率略微下降。","at any rate 無論如何","—"],
-["political","政治的","The journalist wrote an article about the country's ______ problems.","這名記者寫了一篇關於該國政治問題的文章。","political + N","politically 政治上；politics 政治；politician 政治人物"],
-["process","過程；處理","Applying for the scholarship is a long ______.","申請這項獎學金是一個漫長的過程。","be in the process of + N/V-ing","processed foods 加工食品"],
-["majority","大多數","The ______ of students chose to join the school trip.","大多數學生選擇參加校外旅行。","the/a majority of","major 主要的／主修"],
-["property","財產；性質","They lost most of their ______ in the fire.","他們在火災中失去了大部分財產。","property 可指財產或特性","possessions 財物；assets 資產；quality 性質"],
-["opportunity","機會","Studying abroad gave her a great ______ to improve her English.","出國留學給了她提升英文的好機會。","a golden opportunity","chance 機會"],
-["actually","事實上；實際上","He looks like a college student, but ______ he is over thirty.","他看起來像大學生，但其實已經超過三十歲。","actually = in fact","actual 實際的"],
-["recognize","認出；辨認；承認","I could hardly ______ Kevin because he had changed so much.","我幾乎認不出 Kevin，因為他變化太大。","recognize A as B","recognizable 可辨認的；unrecognizable 無法辨認的；recognition 認出／認可"],
-["enjoyable","愉快的","We had an ______ evening at the beach.","我們在海邊度過了一個愉快的夜晚。","enjoy oneself","enjoy 享受；enjoyment 樂趣；pleasant 愉快的；joyful 喜悅的；joy 喜悅"],
-["unique","獨特的","This animal is ______ to the island and cannot be found elsewhere.","這種動物是這座島特有的，其他地方找不到。","be unique to","be native to；be indigenous to"],
-["terrific","極好的","The restaurant serves ______ seafood.","那家餐廳供應極好的海鮮。","terrific = excellent = fantastic","excellent；fantastic"],
-["wed","結婚","The couple plan to ______ next spring.","這對情侶計畫明年春天結婚。","wed sb / wed","marry 結婚；newlyweds 新婚夫婦"],
-["tough","堅韌的；艱難的；強硬的","The coach is very ______ on players who arrive late.","教練對遲到的球員非常嚴厲。","be tough on sb","sturdy 堅固的；difficult 困難的；harsh 嚴厲的"],
-["hire","雇用；租用","The company plans to ______ more workers before the holidays.","公司計畫在假期前多雇用一些員工。","hire sb；for hire","employ 雇用；rent 租用"],
-["homesick","想家的","After three months abroad, she began to feel ______.","在國外三個月後，她開始想家。","feel homesick","—"],
-["invitation","邀請","Have you received an ______ to the graduation party?","你收到畢業派對的邀請了嗎？","at the invitation of sb","invite 邀請；inviting 誘人的／吸引人的"],
-["jealous","嫉妒的","He was ______ of his friend's promotion.","他嫉妒朋友升職。","be jealous of","jealousy 嫉妒；envy 羨慕／嫉妒；envious 羨慕的／嫉妒的"],
-["fright","驚嚇","The child stared at the barking dog with ______.","孩子驚恐地盯著那隻狂吠的狗。","with fright；stage fright","fear；horror；terror；frighten；frightened；frightening；scare；terrified"],
-["locate","位於；找出位置","We finally managed to ______ the missing file.","我們終於找到了那份遺失檔案的位置。","be located in/on/at","location 地點；be situated...；lie..."],
-["costly","昂貴的","That small mistake turned into a very ______ one.","那個小錯誤最後變成代價高昂的錯誤。","costly = expensive","expensive 昂貴的"],
-["mostly","大多數地；主要地","The team succeeded ______ because they worked well together.","這支隊伍的成功主要是因為合作良好。","mostly = mainly / largely / primarily","mainly；largely；primarily"],
-["lately","最近","Have you seen Jason ______?","你最近有看到 Jason 嗎？","lately 常與完成式連用","recently 最近"],
-["besides","此外；除了…之外","I don't want to go out. ______, it's already very late.","我不想出門。此外，現在已經很晚了。","besides 可作副詞或介系詞","beside 在……旁邊"],
-["career","職業；生涯","She hopes to build a successful ______ in medicine.","她希望在醫學領域建立成功的職涯。","career woman；career soldier","—"],
-["painter","畫家；油漆工","The ______ spent the afternoon working on the walls of the house.","油漆工整個下午都在粉刷房子的牆。","painter 可指畫家或油漆工","paint；painting"],
-["banker","銀行家","The successful ______ still lives a simple life.","那位成功的銀行家仍過著簡樸的生活。","banker","bank；banking"],
-["captain","隊長；船長；機長","The ______ told the passengers that the plane would land soon.","機長告訴乘客飛機即將降落。","captain 可指隊長／船長／機長","—"],
-["photographer","攝影師","The ______ won an award for her pictures of wildlife.","那位攝影師以野生動物照片獲獎。","photographer","cameraman／camerawoman"],
-["producer","製作人；生產者","She works as a film ______ in Taipei.","她在台北擔任電影製作人。","producer","produce；manufacturer 製造商；maker 製造者"],
-["professor","教授","Dr. Wang is a ______ of psychology.","王博士是心理學教授。","professor of + 學科","lecturer 講師；associate professor 副教授"]
-];
-const extra=[
-["unity","團結；統一；一致"],["union","聯合；聯盟；工會"],["remaining","剩餘的"],["remains","遺跡；遺骸"],["probably","很可能"],["probability","可能性"],["likelihood","可能性"],["determination","決心"],["determined","下定決心的"],["politically","政治上"],["politics","政治"],["politician","政治人物"],["processed","加工過的"],["major","主要的；主修"],["possessions","財物"],["assets","資產"],["chance","機會"],["actual","實際的"],["recognizable","可辨認的"],["unrecognizable","無法辨認的"],["recognition","認出；認可"],["enjoy","享受"],["enjoyment","樂趣"],["pleasant","令人愉快的"],["boring","無聊的"],["joyful","喜悅的"],["joy","喜悅"],["excellent","極好的"],["fantastic","極好的"],["marry","結婚"],["newlyweds","新婚夫婦"],["sturdy","堅固的"],["difficult","困難的"],["harsh","嚴厲的"],["employ","雇用"],["rent","租用"],["invite","邀請"],["inviting","誘人的；吸引人的"],["jealousy","嫉妒"],["envy","羨慕；嫉妒"],["envious","羨慕的；嫉妒的"],["fear","害怕；恐懼"],["horror","恐怖"],["terror","恐懼"],["frighten","使害怕"],["frightened","害怕的"],["frightening","令人害怕的"],["scare","使害怕"],["terrified","非常害怕的"],["location","地點"],["expensive","昂貴的"],["mainly","主要地"],["largely","主要地"],["primarily","主要地"],["recently","最近"],["beside","在……旁邊"],["paint","油漆；繪畫"],["painting","繪畫；畫作"],["bank","銀行"],["banking","銀行業"],["cameraman","攝影師"],["camerawoman","女攝影師"],["produce","生產；製作"],["manufacturer","製造商"],["maker","製造者"],["lecturer","講師"],["associate professor","副教授"]
-];
-const allMeaning=[...V.map(x=>[x[0],x[1]]),...extra];
-let quiz=[],idx=0,correct=0,wrong=0,locked=false;
-let wrongBank=JSON.parse(localStorage.getItem("ivyU01Wrong")||"[]");
-const sh=a=>[...a].sort(()=>Math.random()-.5);
-function makeSentence(entry){
- const distract=sh(V.filter(x=>x[0]!==entry[0])).slice(0,3).map(x=>x[0]);
- return {type:"sentence",word:entry[0],zh:entry[1],q:entry[2],trans:entry[3],usage:entry[4],family:entry[5],opts:sh([entry[0],...distract])};
+body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;margin:0;background:#f6f7fb;color:#1f2937}.wrap{max-width:980px;margin:auto;padding:22px}.card{background:white;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 3px 16px #00000010}h1{margin:0 0 8px;font-size:28px}h2{font-size:20px}.muted{color:#6b7280}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}select,button{font-size:16px;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:white}button{cursor:pointer}.primary{background:#2563eb;color:white;border-color:#2563eb}.danger{background:#fff1f2;color:#be123c}.pill{background:#eef2ff;border-radius:999px;padding:8px 11px}.stats{display:flex;gap:8px;flex-wrap:wrap}.q{font-size:22px;line-height:1.55;margin:18px 0}.opt{width:100%;display:block;text-align:left;padding:14px;margin:9px 0;border-radius:12px;border:1px solid #d1d5db;background:#fff}.correct{background:#dcfce7!important;border-color:#16a34a!important}.wrong{background:#fee2e2!important;border-color:#dc2626!important}.hidden{display:none}.ex h3{margin:14px 0 5px}.ex p{line-height:1.65;margin:5px 0}.badge{display:inline-block;padding:5px 9px;border-radius:8px;background:#f3f4f6;margin:3px}.logrow{border-top:1px solid #eee;padding:10px 0}.small{font-size:14px;color:#6b7280}
+</style></head><body><div class="wrap">
+<div class="card"><h1>英文單字線上總題庫</h1><p class="muted">常春藤 Level 3 U01–U08 ＋ L01 / L02 / L03 / R01。測驗例句為練習用新編句；字義與搭配依教材整理。</p></div>
+<div class="card"><div class="row">
+<label>範圍 <select id="scope"></select></label>
+<label>題型 <select id="mode"><option value="sentence">句子選字</option><option value="meaning">英翻中</option><option value="mixed">混合</option></select></label>
+<label>題數 <select id="count"><option>10</option><option>20</option><option>30</option><option>50</option><option value="all">全部</option></select></label>
+<button class="primary" id="start">開始測驗</button><button id="retry">錯題重考</button><button id="showlog">錯題紀錄</button>
+</div></div>
+<div id="quiz" class="card hidden"><div class="stats"><span id="progress" class="pill"></span><span id="score" class="pill"></span><span id="wrongc" class="pill"></span></div><div id="q" class="q"></div><div id="opts"></div><div id="exp" class="ex hidden"></div><button id="next" class="primary hidden">下一題</button></div>
+<div id="log" class="card hidden"><div class="row"><h2 style="margin-right:auto">錯題紀錄</h2><button class="danger" id="clearlog">清除全部錯題紀錄</button></div><div id="logbody"></div></div>
+<div class="card small">錯題紀錄保存在目前瀏覽器 localStorage。答錯後會持續保留，可不限次數重考；系統同時記錄答錯次數與最近答錯時間。</div>
+</div><script>
+const D={
+"L01":[
+["memorable","難忘的","The school trip became a ______ memory for everyone.","這次校外教學成了大家難忘的回憶。","memorable + N","memorize 記住；memory 記憶"],
+["reply","回答；回覆","Please ______ to my email before Friday.","請在星期五前回覆我的電子郵件。","reply to + N","reply n./v."],
+["yell","大喊；大吼","Don't ______ at your little brother.","不要對你弟弟大吼。","yell at sb","—"],["perfect","完美的","The weather was ______ for a picnic.","這天氣非常適合野餐。","perfect for + N","—"],["accidentally","意外地；不小心地","I ______ deleted the file.","我不小心刪掉了檔案。","accidentally + V","accident；accidental"],["failure","失敗","He learned a lot from his first ______.","他從第一次失敗中學到很多。","failure n.","fail v."],["recall","回想；想起","I can still ______ my first day at school.","我仍能回想起上學第一天。","recall + N/V-ing","—"],["presentation","簡報；報告","She gave an excellent ______ in class.","她在課堂上做了一場很棒的簡報。","give a presentation","present v."],["skip","略過；翹掉","He decided to ______ the meeting.","他決定不參加那場會議。","skip + N","—"],["ruin","毀掉","The heavy rain may ______ our picnic.","大雨可能會毀掉我們的野餐。","ruin + N","—"],["embarrassed","感到尷尬的","I felt ______ when I forgot her name.","我忘記她名字時感到很尷尬。","be embarrassed about/by","embarrass；embarrassing；embarrassment"],["depressed","沮喪的","She felt ______ after receiving the bad news.","收到壞消息後她很沮喪。","feel depressed","depress；depression"],["upset","難過的；心煩的","He was ______ about the result.","他對結果感到難過。","be upset about","—"],["reflect","反思；反映","Take some time to ______ on what happened.","花點時間反思發生的事。","reflect on","reflection"],["remind","提醒；使想起","Please ______ me to call Mom.","請提醒我打電話給媽媽。","remind sb to V","—"],["realize","了解；意識到","I finally ______ why she was upset.","我終於明白她為何難過。","realize + clause","—"],["traditional","傳統的","They wore ______ clothes for the festival.","他們在節慶時穿傳統服飾。","traditional + N","tradition"],["fortunately","幸運地","______ , nobody was hurt.","幸運的是，沒有人受傷。","sentence adverb","fortunate"]
+],
+"L02":[
+["relationship","關係；戀愛關係","They have a close ______ with their neighbors.","他們和鄰居關係密切。","relationship with","relation；relate"],["satisfying","令人滿意的","Finishing the project was very ______.","完成這個專案很有成就感。","satisfying + N","satisfy；satisfaction"],["inspire","激勵；激發靈感","Her story may ______ other students.","她的故事可能會激勵其他學生。","inspire sb to V","inspiration"],["connect","連接；建立聯繫","Social media helps people ______ with friends.","社群媒體幫助人們與朋友保持聯繫。","connect with","connection"],["communicate","溝通","We need to ______ more clearly.","我們需要更清楚地溝通。","communicate with","communication"],["introduce","介紹；使初次體驗","Let me ______ you to my teacher.","讓我介紹你認識我的老師。","introduce A to B","introduction"],["throughout","遍及；自始至終","It rained ______ the night.","整晚都在下雨。","throughout + period/place","—"],["message","訊息","I left you a ______ this morning.","我今天早上留了一則訊息給你。","leave/send a message","—"],["refresh","重新整理；使恢復精神","Click here to ______ the page.","按這裡重新整理頁面。","refresh the page","—"],["romantic","浪漫的","They had a ______ dinner by the sea.","他們在海邊吃了一頓浪漫晚餐。","romantic + N","romance"],["focus","專注","Please ______ on your homework.","請專心寫作業。","focus on","—"],["ignore","忽略","Don't ______ the warning signs.","不要忽略警告標誌。","ignore + N","ignorance"],["attention","注意力","Pay ______ to the teacher.","注意聽老師說話。","pay attention to","—"],["deny","否認","He ______ taking the money.","他否認拿了錢。","deny + V-ing","—"],["respond","回應","She didn't ______ to my question.","她沒有回應我的問題。","respond to","response"],["disappointed","失望的","We were ______ with the result.","我們對結果感到失望。","be disappointed with","disappoint；disappointment"],["personally","就個人而言；親自","I ______ think the plan is good.","我個人認為這個計畫很好。","personally speaking","personal"]
+],
+"L03":[
+["wonder","想知道","I ______ whether he will come.","我想知道他是否會來。","wonder if/whether","—"],["amazing","令人驚奇的","The view from the mountain was ______.","山上的景色令人驚嘆。","amazing + N","amaze；amazement"],["average","平均；平均的","Her score is above ______.","她的分數高於平均。","on average / above average","—"],["therefore","因此","It was raining; ______, we stayed home.","下雨了，因此我們待在家。","therefore 連接因果","—"],["nap","小睡","I usually take a short ______ after lunch.","我午餐後通常會小睡一下。","take a nap","—"],["float","漂浮","Leaves ______ on the water.","葉子漂浮在水面上。","float on","—"],["avoid","避免","Try to ______ making the same mistake.","盡量避免犯同樣的錯。","avoid + V-ing","—"],["surface","表面","The dolphin rose to the ______.","海豚浮到水面。","surface n.","—"],["breathe","呼吸","Take a moment to ______ slowly.","花點時間慢慢呼吸。","breathe v.","breath n."],["awake","醒著的","I stayed ______ all night.","我整晚都醒著。","stay awake","—"],["impressive","令人印象深刻的","Her performance was very ______.","她的表演令人印象深刻。","impressive + N","impress；impression"],["distance","距離","They walked a long ______.","他們走了很長一段距離。","a long distance","distant"],["journey","旅程","The train ______ took five hours.","火車旅程花了五小時。","journey n.","—"],["flight","飛行；班機","Our ______ leaves at noon.","我們的班機中午起飛。","flight n.","—"],["variety","多樣性；種類","The shop sells a wide ______ of fruit.","這家店販售各式各樣的水果。","a variety of","vary；various"],["creature","生物","Many sea ______ live here.","許多海洋生物住在這裡。","creature n.","—"],["expert","專家","She is an ______ at solving this problem.","她是解決這類問題的專家。","be an expert at/in","—"],["survive","生存；存活","Some animals can ______ in extreme cold.","有些動物能在極寒中生存。","survive + N","survival"]
+],
+"R01":[
+["custom","習俗","It is a local ______ to remove your shoes.","脫鞋是當地習俗。","a custom to V","—"],["astonish","使驚訝","The news will ______ everyone.","這消息會讓大家驚訝。","astonish sb","—"],["culture","文化","Food is an important part of ______.","食物是文化的重要部分。","culture n.","cultural"],["greeting","招呼；問候","She gave me a warm ______.","她熱情地向我問候。","a warm greeting","greet"],["grab","抓住；匆忙拿取","He ______ my arm before I fell.","我跌倒前他抓住我的手臂。","grab + N","—"],["valuable","寶貴的；有價值的","This advice is very ______.","這項建議很寶貴。","valuable to","value"],["disappear","消失","The sun ______ behind the clouds.","太陽消失在雲後。","disappear from","—"],["afterward","之後","We had dinner and went home ______.","我們吃完晚餐後就回家了。","afterward adv.","—"],["sacred","神聖的","The temple is a ______ place.","這座寺廟是神聖的地方。","sacred + N","—"],["daily","每日的；日常的","Exercise is part of my ______ routine.","運動是我日常作息的一部分。","daily + N","—"],["schedule","行程；時間表","My ______ is full today.","我今天行程滿檔。","schedule n./v.","—"],["forever","永遠","Nothing lasts ______.","沒有什麼會永遠持續。","forever adv.","—"],["include","包括","The price ______ breakfast.","價格包含早餐。","include + N","including"],["difference","差異","There is a big ______ between the two plans.","兩個計畫差異很大。","difference between A and B","—"],["embrace","擁抱；欣然接受","We should ______ new ideas.","我們應該接受新想法。","embrace + N","—"]
+],
+"U01":[["unite","聯合；使團結","The two groups decided to ______.","兩個團體決定聯合。","unite with","unity；union"],["remain","保持；仍然是；留下","They ______ good friends today.","他們至今仍是好朋友。","remain + adj./n.","remaining；remains"],["probable","很可能的","It is ______ that the game will be canceled.","比賽很可能取消。","It is probable that...","probably；probability"],["likely","很可能的","It seems ______ that prices will rise.","價格似乎很可能上漲。","It is/seems likely that...","likelihood"],["situation","情況；局勢","What would you do in this ______?","遇到這種情況你會怎麼做？","in a situation","—"],["determine","決定；確定","Police tried to ______ the cause.","警方試圖確定原因。","determine to V / determine + N","determination；determined"],["rate","比率；速度","The unemployment ______ fell.","失業率下降了。","at any rate","—"],["political","政治的","They discussed a ______ issue.","他們討論一項政治議題。","political + N","politics；politician"],["process","過程；處理","Learning takes time; it is a ______.","學習需要時間，是一個過程。","in the process of","processed"],["majority","大多數","The ______ of students agreed.","大多數學生都同意。","the majority of","major"],["property","財產；性質","They lost their ______ in the fire.","他們在火災中失去財產。","property n.","possessions；assets"],["opportunity","機會","This is a great ______ to practice.","這是很好的練習機會。","a golden opportunity","chance"],["actually","事實上；實際上","He looks young, but ______ he is forty.","他看起來年輕，但其實四十歲。","actually = in fact","actual"],["recognize","認出；辨認；承認","I could hardly ______ him.","我幾乎認不出他。","recognize A as B","recognition"],["enjoyable","愉快的","We had an ______ evening.","我們度過愉快的夜晚。","enjoy oneself","enjoy；enjoyment"],["unique","獨特的","This bird is ______ to the island.","這種鳥是這座島特有的。","be unique to","native；indigenous"],["terrific","極好的","The restaurant serves ______ food.","這家餐廳提供很棒的食物。","terrific = excellent","fantastic"],["wed","結婚","They plan to ______ next spring.","他們計畫明年春天結婚。","wed/marry","newlyweds"],["tough","堅韌的；艱難的；強硬的","The coach is ______ on late players.","教練對遲到球員很嚴格。","be tough on","sturdy；harsh"],["hire","雇用；租用","The company will ______ more workers.","公司將雇用更多員工。","hire sb / for hire","employ；rent"],["homesick","想家的","She felt ______ abroad.","她在國外很想家。","feel homesick","—"],["invitation","邀請","I received an ______ to the party.","我收到派對邀請。","at the invitation of","invite；inviting"],["jealous","嫉妒的","He was ______ of his friend's success.","他嫉妒朋友的成功。","be jealous of","jealousy；envy；envious"],["fright","驚嚇","The child looked at the dog with ______.","孩子害怕地看著那隻狗。","with fright；stage fright","frighten；frightened"],["locate","找出位置；位於","We finally ______ the missing bag.","我們終於找到遺失的袋子。","be located in/on/at","location"],["costly","昂貴的","It was a ______ mistake.","那是代價高昂的錯誤。","costly = expensive","expensive"],["mostly","主要地；大多數地","He succeeded ______ through hard work.","他的成功主要來自努力。","mostly = mainly","largely；primarily"],["lately","最近","Have you seen her ______?","你最近有看到她嗎？","lately 常與完成式","recently"],["besides","此外；除了…之外","I am tired; ______, it is late.","我累了，而且現在很晚。","besides adv./prep.","beside"],["career","職業；生涯","She wants a ______ in medicine.","她想從事醫療職涯。","career woman/soldier","—"],["painter","畫家；油漆工","The ______ painted the wall.","油漆工粉刷牆面。","painter","paint；painting"],["banker","銀行家","The ______ works in finance.","那位銀行家從事金融業。","banker","bank；banking"],["captain","隊長；船長；機長","The ______ spoke to the passengers.","機長對乘客說話。","captain","—"],["photographer","攝影師","The ______ took award-winning photos.","攝影師拍了得獎照片。","photographer","cameraman"],["producer","製作人；生產者","She is a film ______.","她是電影製作人。","producer","produce；manufacturer"],["professor","教授","He is a ______ of psychology.","他是心理學教授。","professor of","lecturer；associate professor"]],
+"U02":[["permit","允許；許可證","Smoking is not ______ here.","這裡不允許吸菸。","permit sb to V / permit V-ing","permission"],["volume","音量；量；冊","Please turn down the ______.","請把音量調小。","turn the volume up/down","—"],["represent","代表；象徵","She will ______ the school at the meeting.","她將代表學校出席會議。","represent A","representation；representative"],["attitude","態度","He has a positive ______ toward learning.","他對學習態度積極。","attitude toward(s)","—"],["reduce","減少；降低","We need to ______ waste.","我們需要減少浪費。","reduce + N","reduction；decrease"],["fake","假的；假貨；偽造","The police found ______ money.","警方發現假鈔。","fake + N","genuine"],["religious","宗教的；虔誠的","They respect different ______ beliefs.","他們尊重不同宗教信仰。","religious belief","religion"],["strength","力量；優點","Teamwork is our greatest ______.","團隊合作是我們最大的優點。","strength n.","strong；strengthen"],["vary","變化；使有變化","Prices ______ from store to store.","價格因商店而異。","vary in/from","variation"],["prevent","防止","Warm clothes help ______ heat loss.","保暖衣物有助防止熱量流失。","prevent A from V-ing","prevention"],["performance","表現；演出","Her ______ impressed everyone.","她的表現讓大家印象深刻。","performance n.","perform"],["imagination","想像力","Children have rich ______.","孩子有豐富想像力。","imagination n.","imagine"],["response","回應","We are waiting for his ______.","我們在等他的回覆。","response to","respond"],["achievement","成就","Winning the prize was a major ______.","得獎是一項重大成就。","achievement n.","achieve"],["magical","神奇的","The show created a ______ atmosphere.","表演營造神奇氣氛。","magical + N","magic"],["immediate","立即的","The patient needs ______ help.","病人需要立即協助。","immediate + N","immediately"]],
+"U03":[["react","反應","How did she ______ to the news?","她對消息有何反應？","react to","reaction"],["fund","資金","The school raised ______ for new equipment.","學校為新設備募款。","raise funds for","fundraiser"],["audience","觀眾","The ______ applauded loudly.","觀眾大聲鼓掌。","audience 集合名詞","—"],["moral","道德的；寓意","The story has a clear ______ lesson.","這故事有清楚的道德寓意。","moral lesson","immoral"],["announce","宣布","They will ______ the result tomorrow.","他們明天會宣布結果。","announce + N","announcement"],["theory","理論","The scientist proposed a new ______.","科學家提出新理論。","theory n.","—"],["structure","結構","The building has a strong ______.","這棟建築結構堅固。","structure n.","—"],["crew","工作人員；機組員","The flight ______ prepared the cabin.","機組員準備機艙。","crew n.","—"],["lifestyle","生活方式","Exercise is part of a healthy ______.","運動是健康生活方式的一部分。","lifestyle n.","—"],["reveal","揭露","The report may ______ the truth.","報告可能揭露真相。","reveal + N","—"],["destroy","摧毀","The fire could ______ the house.","火災可能摧毀房子。","destroy + N","destruction"],["advantage","優點；優勢","Experience gives her an ______.","經驗給她優勢。","advantage over","disadvantage"],["specific","具體的；特定的","Please give a ______ example.","請給一個具體例子。","specific + N","specifically"],["dizzy","暈眩的","I felt ______ after spinning.","旋轉後我感到暈眩。","feel dizzy","—"],["drag","拖；拉","Don't ______ the box across the floor.","不要在地板上拖箱子。","drag + N","—"],["suffer","遭受；受苦","Many people ______ from allergies.","很多人受過敏所苦。","suffer from","—"]],
+"U04":[["pretend","假裝","He ______ to be asleep.","他假裝睡著。","pretend to V","—"],["frequent","頻繁的；常去","This is a ______ problem.","這是常見問題。","frequent + N","frequency"],["experiment","實驗","The students conducted an ______.","學生進行實驗。","experiment with/on","experimental"],["aware","知道的；意識到的","Are you ______ of the risk?","你知道這個風險嗎？","be aware of","awareness"],["replace","取代；更換","We need to ______ the old battery.","我們需要更換舊電池。","replace A with B","replacement"],["conclusion","結論","They reached the same ______.","他們得到相同結論。","reach a conclusion","conclude"],["inform","通知","Please ______ me of any changes.","若有變動請通知我。","inform sb of","information"],["elect","選舉","They will ______ a new leader.","他們將選出新領導人。","elect + person","election"],["signal","信號；示意","The light is a ______ to stop.","這盞燈是停止的信號。","signal n./v.","—"],["explore","探索","We want to ______ the city.","我們想探索這座城市。","explore + N","exploration"],["edit","編輯","Please ______ the report.","請編輯這份報告。","edit + N","editor"],["familiar","熟悉的","This song sounds ______.","這首歌聽起來很熟悉。","be familiar with/to","familiarity"],["expressive","富有表情的","She has very ______ eyes.","她的眼神很有表情。","expressive + N","express"]],
+"U05":[["previous","先前的","Do you have any ______ experience?","你有任何相關的先前經驗嗎？","previous + N","previously"],["background","背景","His ______ helped him get the job.","他的背景幫助他得到工作。","background n.","—"],["aside","到一旁","Please step ______.","請站到一旁。","step aside","—"],["apart","分開地","The two houses stand far ______.","兩棟房子相隔很遠。","apart from","—"],["fashionable","流行的；時髦的","This style is very ______ now.","這種款式現在很流行。","fashionable + N","old-fashioned"],["relief","寬心；解除","She sighed with ______.","她鬆了一口氣。","with relief","relieve"],["liquid","液體","Water is a ______.","水是一種液體。","liquid n./adj.","—"],["democracy","民主","Freedom of speech matters in a ______.","言論自由在民主社會很重要。","democracy n.","democratic"],["neighborhood","鄰近地區","There is a park in my ______.","我家附近有一座公園。","in the neighborhood","neighboring"],["area","地區；區域","This is a quiet residential ______.","這是一個安靜的住宅區。","area n.","—"],["tricky","棘手的；狡猾的","That is a ______ question.","那是一個棘手的問題。","tricky + N","—"],["spill","灑出；溢出","Be careful not to ______ the milk.","小心不要把牛奶灑出來。","spill + N","—"],["solid","固體的；堅固的","Ice is the ______ form of water.","冰是水的固態。","solid adj./n.","—"],["significant","重要的；顯著的","There was a ______ change.","出現了顯著變化。","significant + N","significance"]],
+"U06":[["murderer","殺人犯","The police arrested the ______.","警方逮捕了殺人犯。","murderer n.","murder"],["suspect","嫌疑犯；懷疑","The police questioned a ______.","警方訊問一名嫌疑犯。","suspect n./v.","suspicion"],["roast","烤；烤肉","Mom will ______ the chicken.","媽媽會烤雞。","roast + N","roast n."],["reasonable","合理的；講理的","That sounds like a ______ plan.","那聽起來是合理的計畫。","reasonable + N","reason；unreasonable"],["missing","失蹤的；缺少的","The child was reported ______.","那名孩子被通報失蹤。","go/be missing","miss"],["benefit","益處；福利","Exercise has many health ______.","運動有很多健康益處。","benefit from","beneficial"],["profit","利潤","The company made a large ______.","公司獲得大量利潤。","make a profit","profitable"],["flesh","肉；肌肉","The fruit has soft ______.","這水果果肉柔軟。","flesh n.","—"],["dust","灰塵","There is ______ on the shelf.","架子上有灰塵。","dust n.","dusty"],["automobile","汽車","The museum displays an old ______.","博物館展示一輛老汽車。","automobile n.","car"],["confirm","確認","Please ______ your reservation.","請確認你的訂位。","confirm + N","confirmation"],["deny","否認","He ______ breaking the window.","他否認打破窗戶。","deny + V-ing","—"]],
+"U07":[["trend","趨勢；潮流","Companies watch market ______ closely.","公司密切觀察市場趨勢。","keep track of trends","trendy"],["attract","吸引","Bright colors ______ attention.","鮮豔色彩吸引注意。","attract attention","attraction；attractive"],["history","歷史","She loves studying ______.","她喜歡讀歷史。","history n.","historical；historian"],["avenue","大道；方法","Their office is on Fifth ______.","他們的辦公室在第五大道。","avenue n.","—"],["alley","小巷","The cat ran into a narrow ______.","貓跑進一條窄巷。","alley n.","—"],["valley","山谷","A river runs through the ______.","河流穿過山谷。","valley n.","—"],["ally","盟友","The country found a strong ______.","該國找到一個強大盟友。","ally n.","alliance"],["threat","威脅","Pollution is a serious ______.","污染是嚴重威脅。","threat to","threaten"],["paradise","天堂；樂園","The island is a tropical ______.","這座島是熱帶天堂。","paradise n.","—"],["remind","提醒；使想起","This song ______ me of home.","這首歌讓我想起家。","remind sb of","—"],["internal","內部的","The company has an ______ problem.","公司有內部問題。","internal + N","external"],["execute","執行","The team must ______ the plan well.","團隊必須好好執行計畫。","execute + N","execution"]],
+"U08":[["protection","保護","Wear a helmet for ______.","戴安全帽以保護自己。","protection from/against","protective"],["stormy","暴風雨的；激烈的","We stayed home on the ______ night.","暴風雨夜我們待在家。","stormy + N","storm"],["pure","純的；純淨的","This bottle contains ______ water.","這瓶裝的是純水。","pure + N","purify；purity"],["indigenous","原產的；本土的","The plant is ______ to Taiwan.","這種植物原產於台灣。","be indigenous to","—"],["domestic","國內的；家庭的","The airline serves many ______ routes.","這家航空公司有許多國內航線。","domestic + N","—"],["bull","公牛","A large ______ stood in the field.","一頭大公牛站在田裡。","bull n.","—"],["buffalo","水牛；野牛","We saw a herd of ______.","我們看到一群水牛。","buffalo n.","—"],["shadow","陰影","We sat in the tree's ______.","我們坐在樹蔭下。","in the shadow of","—"],["advertise","廣告宣傳","They will ______ the product online.","他們會在線上宣傳產品。","advertise + N","advertiser；advertisement；advertising"],["liberty","自由","People value their personal ______.","人們重視個人自由。","liberty n.","freedom"]]
+};
+const order=["L01","L02","L03","R01","U01","U02","U03","U04","U05","U06","U07","U08"];
+const names={L01:"L01 Firsts in Life",L02:"L02 Goodbye, John",L03:"L03 Do Animals Sleep like You and Me?",R01:"R01 When Shocked in Rome",U01:"常春藤 U01",U02:"常春藤 U02",U03:"常春藤 U03",U04:"常春藤 U04",U05:"常春藤 U05",U06:"常春藤 U06",U07:"常春藤 U07",U08:"常春藤 U08"};
+const sc=document.getElementById("scope"); sc.innerHTML='<option value="ALL">全部已建置範圍</option>'+order.map(k=>'<option value="'+k+'">'+names[k]+'</option>').join('');
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const flat=()=>order.flatMap(k=>D[k].map(x=>({set:k,e:x})));
+let wrongLog=JSON.parse(localStorage.getItem("engWrongLogV2")||"{}"),quiz=[],i=0,ok=0,bad=0,locked=false;
+function key(set,word,type){return set+"|"+word+"|"+type}
+function meaningPool(){return flat().map(z=>[z.e[0],z.e[1]])}
+function makeQ(set,e,type){
+ if(type==="sentence"){const ds=shuffle(flat().filter(z=>z.e[0]!==e[0])).slice(0,3).map(z=>z.e[0]);return{set,type,word:e[0],zh:e[1],q:e[2],trans:e[3],usage:e[4],family:e[5],opts:shuffle([e[0],...ds])}}
+ const mp=meaningPool(),ds=shuffle(mp.filter(z=>z[0]!==e[0])).slice(0,3).map(z=>z[1]);return{set,type,word:e[0],zh:e[1],q:e[0],opts:shuffle([e[1],...ds])}
 }
-function makeMeaning(entry){
- const distract=sh(allMeaning.filter(x=>x[0]!==entry[0])).slice(0,3).map(x=>x[1]);
- return {type:"meaning",word:entry[0],zh:entry[1],q:entry[0],opts:sh([entry[1],...distract])};
-}
+function selectedEntries(){const s=sc.value;return(s==="ALL"?flat():D[s].map(e=>({set:s,e})))}
 function start(retry=false){
- let mode=document.getElementById("mode").value, n=document.getElementById("count").value;
- let pool=[];
- if(retry && wrongBank.length){
-   const words=[...new Set(wrongBank)];
-   const vs=V.filter(x=>words.includes(x[0])), ms=allMeaning.filter(x=>words.includes(x[0]));
-   pool=mode==="sentence"?vs.map(makeSentence):mode==="meaning"?ms.map(makeMeaning):sh([...vs.map(makeSentence),...ms.map(makeMeaning)]);
+ const mode=document.getElementById("mode").value,n=document.getElementById("count").value;let base=[];
+ if(retry){
+   const keys=Object.keys(wrongLog); if(!keys.length){alert("目前沒有錯題紀錄");return}
+   for(const k of keys){const [set,word,type]=k.split("|");if(sc.value!=="ALL"&&set!==sc.value)continue;if(mode!=="mixed"&&type!==mode)continue;const e=(D[set]||[]).find(x=>x[0]===word);if(e)base.push(makeQ(set,e,type))}
  }else{
-   pool=mode==="sentence"?V.map(makeSentence):mode==="meaning"?allMeaning.map(makeMeaning):sh([...V.map(makeSentence),...allMeaning.map(makeMeaning)]);
+   for(const z of selectedEntries()){if(mode==="mixed"){base.push(makeQ(z.set,z.e,Math.random()<.5?"sentence":"meaning"))}else base.push(makeQ(z.set,z.e,mode))}
  }
- quiz=sh(pool); if(n!=="all")quiz=quiz.slice(0,Math.min(+n,quiz.length));
- idx=0;correct=0;wrong=0;locked=false;document.getElementById("quiz").classList.remove("hidden");render();
+ quiz=shuffle(base);if(n!=="all")quiz=quiz.slice(0,Math.min(+n,quiz.length));i=0;ok=0;bad=0;document.getElementById("quiz").classList.remove("hidden");document.getElementById("log").classList.add("hidden");render()
 }
-function render(){
- if(idx>=quiz.length){document.getElementById("q").innerHTML="測驗完成！";document.getElementById("opts").innerHTML="";document.getElementById("exp").innerHTML="<h3>本次成績</h3><p>答對 "+correct+" 題，答錯 "+wrong+" 題，正確率 "+(quiz.length?Math.round(correct/quiz.length*100):0)+"%。</p>";document.getElementById("exp").classList.remove("hidden");document.getElementById("next").classList.add("hidden");stats();return}
- locked=false;const x=quiz[idx];document.getElementById("q").textContent=x.type==="sentence"?x.q:"「"+x.q+"」的中文意思是？";const o=document.getElementById("opts");o.innerHTML="";x.opts.forEach(v=>{const b=document.createElement("button");b.className="option";b.textContent=v;b.onclick=()=>answer(v,b);o.appendChild(b)});document.getElementById("exp").classList.add("hidden");document.getElementById("next").classList.add("hidden");stats();
-}
-function stats(){document.getElementById("progress").textContent="進度 "+Math.min(idx+1,quiz.length)+"/"+quiz.length;document.getElementById("score").textContent="答對 "+correct;document.getElementById("wrongcount").textContent="答錯 "+wrong}
-function answer(v,b){
- if(locked)return;locked=true;const x=quiz[idx],ans=x.type==="sentence"?x.word:x.zh,isok=v===ans;
- document.querySelectorAll(".option").forEach(el=>{if(el.textContent===ans)el.classList.add("correct")});if(!isok)b.classList.add("wrong");
- if(isok){correct++;wrongBank=wrongBank.filter(w=>w!==x.word)}else{wrong++;if(!wrongBank.includes(x.word))wrongBank.push(x.word)}
- localStorage.setItem("ivyU01Wrong",JSON.stringify(wrongBank));
- const e=document.getElementById("exp");e.innerHTML=x.type==="sentence"?sentenceExp(x):meaningExp(x);e.classList.remove("hidden");document.getElementById("next").classList.remove("hidden");stats();
-}
-function sentenceExp(x){
- const labels=["A","B","C","D"], meanings=x.opts.map(w=>{const m=allMeaning.find(a=>a[0]===w);return m?m[1]:"—"});
- const other=x.opts.filter(w=>w!==x.word).map(w=>{const m=allMeaning.find(a=>a[0]===w);return "<p><b>"+w+"</b>：表示「"+(m?m[1]:"—")+"」，與本句語意或詞性不合。</p>"}).join("");
- return "<h3>① 完整英文句</h3><p>"+x.q.replace("______","<b>"+x.word+"</b>")+"</p><h3>② 完整中文翻譯</h3><p>"+x.trans+"</p><h3>③ 四個選項中文意思</h3>"+x.opts.map((w,i)=>"<p>"+labels[i]+". "+w+"＝"+meanings[i]+"</p>").join("")+"<h3>④ 為什麼正確答案適合？</h3><p><b>"+x.word+"</b> 表示「"+x.zh+"」，放入句中語意自然且符合句型。</p><h3>⑤ 其他選項為什麼不適合？</h3>"+other+"<h3>⑥ 必記文法／搭配</h3><p>"+x.usage+"</p><h3>⑦ 衍生字／相關用法</h3><p>"+x.family+"</p>";
-}
-function meaningExp(x){return "<h3>正確答案</h3><p><b>"+x.word+"＝"+x.zh+"</b></p><h3>四個選項解析</h3>"+x.opts.map(z=>"<p>"+z+(z===x.zh?" ✓":"")+"</p>").join("")+"<h3>常見搭配／相關字</h3><p>可搭配教材中 U01 的相關片語與衍生字一起複習。</p>"}
-document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("next").onclick=()=>{idx++;render()};
-</script>
-</body>
-</html>
+function render(){if(i>=quiz.length){document.getElementById("q").innerHTML="測驗完成";document.getElementById("opts").innerHTML="";document.getElementById("exp").innerHTML="<h3>本次成績</h3><p>答對 "+ok+"，答錯 "+bad+"，正確率 "+(quiz.length?Math.round(ok/quiz.length*100):0)+"%。</p>";document.getElementById("exp").classList.remove("hidden");document.getElementById("next").classList.add("hidden");stats();return}
+ locked=false;const x=quiz[i];document.getElementById("q").innerHTML='<span class="badge">'+names[x.set]+'</span><br>'+(x.type==="sentence"?x.q:"「"+x.q+"」的中文意思是？");const o=document.getElementById("opts");o.innerHTML="";x.opts.forEach(v=>{const b=document.createElement("button");b.className="opt";b.textContent=v;b.onclick=()=>answer(v,b);o.appendChild(b)});document.getElementById("exp").classList.add("hidden");document.getElementById("next").classList.add("hidden");stats()}
+function stats(){document.getElementById("progress").textContent="進度 "+Math.min(i+1,quiz.length)+"/"+quiz.length;document.getElementById("score").textContent="答對 "+ok;document.getElementById("wrongc").textContent="答錯 "+bad}
+function answer(v,b){if(locked)return;locked=true;const x=quiz[i],ans=x.type==="sentence"?x.word:x.zh,good=v===ans;document.querySelectorAll(".opt").forEach(el=>{if(el.textContent===ans)el.classList.add("correct")});if(!good)b.classList.add("wrong");if(good)ok++;else{bad++;const k=key(x.set,x.word,x.type),old=wrongLog[k]||{set:x.set,word:x.word,type:x.type,count:0};old.count++;old.last=new Date().toLocaleString();wrongLog[k]=old;localStorage.setItem("engWrongLogV2",JSON.stringify(wrongLog))}
+ const ex=document.getElementById("exp");ex.innerHTML=x.type==="sentence"?sentenceExp(x):meaningExp(x);ex.classList.remove("hidden");document.getElementById("next").classList.remove("hidden");stats()}
+function zhOf(w){for(const z of flat())if(z.e[0]===w)return z.e[1];return"—"}
+function sentenceExp(x){const L=["A","B","C","D"];return"<h3>① 完整英文句</h3><p>"+x.q.replace("______","<b>"+x.word+"</b>")+"</p><h3>② 完整中文翻譯</h3><p>"+x.trans+"</p><h3>③ A/B/C/D 中文意思</h3>"+x.opts.map((w,j)=>"<p>"+L[j]+". "+w+"＝"+zhOf(w)+"</p>").join("")+"<h3>④ 為什麼正確答案適合？</h3><p><b>"+x.word+"</b>＝「"+x.zh+"」，符合本句語意與句型。</p><h3>⑤ 其他選項為什麼不適合？</h3>"+x.opts.filter(w=>w!==x.word).map(w=>"<p><b>"+w+"</b>＝「"+zhOf(w)+"」，放入本句會使語意或詞性不合。</p>").join("")+"<h3>⑥ 必記文法／搭配</h3><p>"+x.usage+"</p><h3>⑦ 衍生字／相關用法</h3><p>"+x.family+"</p>"}
+function meaningExp(x){return"<h3>正確答案</h3><p><b>"+x.word+"＝"+x.zh+"</b></p><h3>四個選項</h3>"+x.opts.map(z=>"<p>"+z+(z===x.zh?" ✓":"")+"</p>").join("")+"<h3>搭配／相關字</h3><p>"+(x.usage||"—")+"；"+(x.family||"—")+"</p>"}
+function showLog(){document.getElementById("quiz").classList.add("hidden");document.getElementById("log").classList.remove("hidden");const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);document.getElementById("logbody").innerHTML=a.length?a.map(x=>'<div class="logrow"><b>'+names[x.set]+'｜'+x.word+'</b><br><span class="small">題型：'+(x.type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+x.count+' 次｜最近：'+x.last+'</span></div>').join(""):"目前沒有錯題紀錄。"}
+document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{if(confirm("確定清除全部錯題紀錄？")){wrongLog={};localStorage.removeItem("engWrongLogV2");showLog()}}
+</script></body></html>
