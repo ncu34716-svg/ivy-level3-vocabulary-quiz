@@ -11,7 +11,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;ma
 </div></div>
 <div id="quiz" class="card hidden"><div class="stats"><span id="progress" class="pill"></span><span id="score" class="pill"></span><span id="wrongc" class="pill"></span></div><div id="q" class="q"></div><div id="opts"></div><div id="exp" class="ex hidden"></div><button id="next" class="primary hidden">下一題</button></div>
 <div id="log" class="card hidden"><div class="row"><h2 style="margin-right:auto">錯題紀錄</h2><button class="danger" id="clearlog">清除全部錯題紀錄</button></div><div id="logbody"></div></div>
-<div class="card small">錯題紀錄保存在目前瀏覽器 localStorage。答錯後會持續保留，可不限次數重考；系統同時記錄答錯次數與最近答錯時間。</div>
+<div class="card small">錯題依單元分開保存在目前瀏覽器。選擇 U01、U02…或 L01/R01 後，可單獨查看與重考該單元錯題；答錯後會持續保留，直到您自行清除該單元紀錄。</div>
 </div><script>
 const D={
 "L01":[
@@ -43,7 +43,31 @@ const names={L01:"L01 Firsts in Life",L02:"L02 Goodbye, John",L03:"L03 Do Animal
 const sc=document.getElementById("scope"); sc.innerHTML='<option value="ALL">全部已建置範圍</option>'+order.map(k=>'<option value="'+k+'">'+names[k]+'</option>').join('');
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const flat=()=>order.flatMap(k=>D[k].map(x=>({set:k,e:x})));
-let wrongLog=JSON.parse(localStorage.getItem("engWrongLogV2")||"{}"),quiz=[],i=0,ok=0,bad=0,locked=false;
+let wrongLog={},quiz=[],i=0,ok=0,bad=0,locked=false;
+function storageKey(set){return "engWrong_"+set+"_V3"}
+function loadUnitWrong(set){try{return JSON.parse(localStorage.getItem(storageKey(set))||"{}")}catch(e){return{}}}
+function saveUnitWrong(set,obj){localStorage.setItem(storageKey(set),JSON.stringify(obj))}
+function loadAllWrong(){
+  const out={};
+  for(const set of order){Object.assign(out,loadUnitWrong(set))}
+  return out;
+}
+function migrateOldWrong(){
+  try{
+    const old=JSON.parse(localStorage.getItem("engWrongLogV2")||"{}");
+    if(!old||!Object.keys(old).length)return;
+    const grouped={};
+    for(const [k,v] of Object.entries(old)){
+      const set=v.set||k.split("|")[0];
+      if(!grouped[set])grouped[set]=loadUnitWrong(set);
+      grouped[set][k]=v;
+    }
+    for(const [set,obj] of Object.entries(grouped))saveUnitWrong(set,obj);
+    localStorage.removeItem("engWrongLogV2");
+  }catch(e){}
+}
+migrateOldWrong();
+wrongLog=loadAllWrong();
 function key(set,word,type){return set+"|"+word+"|"+type}
 function meaningPool(){return flat().map(z=>[z.e[0],z.e[1]])}
 function makeQ(set,e,type){
@@ -58,7 +82,8 @@ function selectedEntries(){const s=sc.value;return(s==="ALL"?flat():D[s].map(e=>
 function start(retry=false){
  const mode=document.getElementById("mode").value,n=document.getElementById("count").value;let base=[];
  if(retry){
-   const keys=Object.keys(wrongLog); if(!keys.length){alert("目前沒有錯題紀錄");return}
+   wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);
+   const keys=Object.keys(wrongLog); if(!keys.length){alert("目前這個單元沒有錯題紀錄");return}
    for(const k of keys){const [set,word,type]=k.split("|");if(sc.value!=="ALL"&&set!==sc.value)continue;if(mode!=="mixed"&&type!==mode)continue;const e=(D[set]||[]).find(x=>x[0]===word);if(e){const q=makeQ(set,e,type);if(q)base.push(q)}}
  }else{
    for(const z of selectedEntries()){if(mode==="mixed"){const t=Math.random()<.5?"sentence":"meaning";const q=makeQ(z.set,z.e,t)||makeQ(z.set,z.e,"meaning");if(q)base.push(q)}else{const q=makeQ(z.set,z.e,mode);if(q)base.push(q)}}
@@ -68,11 +93,29 @@ function start(retry=false){
 function render(){if(i>=quiz.length){document.getElementById("q").innerHTML="測驗完成";document.getElementById("opts").innerHTML="";document.getElementById("exp").innerHTML="<h3>本次成績</h3><p>答對 "+ok+"，答錯 "+bad+"，正確率 "+(quiz.length?Math.round(ok/quiz.length*100):0)+"%。</p>";document.getElementById("exp").classList.remove("hidden");document.getElementById("next").classList.add("hidden");stats();return}
  locked=false;const x=quiz[i];document.getElementById("q").innerHTML='<span class="badge">'+names[x.set]+'</span><br>'+(x.type==="sentence"?x.q:"「"+x.q+"」的中文意思是？");const o=document.getElementById("opts");o.innerHTML="";x.opts.forEach(v=>{const b=document.createElement("button");b.className="opt";b.textContent=v;b.onclick=()=>answer(v,b);o.appendChild(b)});document.getElementById("exp").classList.add("hidden");document.getElementById("next").classList.add("hidden");stats()}
 function stats(){document.getElementById("progress").textContent="進度 "+Math.min(i+1,quiz.length)+"/"+quiz.length;document.getElementById("score").textContent="答對 "+ok;document.getElementById("wrongc").textContent="答錯 "+bad}
-function answer(v,b){if(locked)return;locked=true;const x=quiz[i],ans=x.type==="sentence"?x.word:x.zh,good=v===ans;document.querySelectorAll(".opt").forEach(el=>{if(el.textContent===ans)el.classList.add("correct")});if(!good)b.classList.add("wrong");if(good)ok++;else{bad++;const k=key(x.set,x.word,x.type),old=wrongLog[k]||{set:x.set,word:x.word,type:x.type,count:0};old.count++;old.last=new Date().toLocaleString();wrongLog[k]=old;localStorage.setItem("engWrongLogV2",JSON.stringify(wrongLog))}
+function answer(v,b){if(locked)return;locked=true;const x=quiz[i],ans=x.type==="sentence"?x.word:x.zh,good=v===ans;document.querySelectorAll(".opt").forEach(el=>{if(el.textContent===ans)el.classList.add("correct")});if(!good)b.classList.add("wrong");if(good)ok++;else{
+  bad++;
+  const unitLog=loadUnitWrong(x.set);
+  const k=key(x.set,x.word,x.type),old=unitLog[k]||{set:x.set,word:x.word,type:x.type,count:0};
+  old.count++;old.last=new Date().toLocaleString();unitLog[k]=old;saveUnitWrong(x.set,unitLog);
+  wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);
+}
  const ex=document.getElementById("exp");ex.innerHTML=x.type==="sentence"?sentenceExp(x):meaningExp(x);ex.classList.remove("hidden");document.getElementById("next").classList.remove("hidden");stats()}
 function zhOf(w){for(const z of flat())if(z.e[0]===w)return z.e[1];return"—"}
 function sentenceExp(x){const L=["A","B","C","D"];return"<h3>① 完整英文句</h3><p>"+x.q.replace("______","<b>"+x.word+"</b>")+"</p><h3>② 完整中文翻譯</h3><p>"+x.trans+"</p><h3>③ A/B/C/D 中文意思</h3>"+x.opts.map((w,j)=>"<p>"+L[j]+". "+w+"＝"+zhOf(w)+"</p>").join("")+"<h3>④ 為什麼正確答案適合？</h3><p><b>"+x.word+"</b>＝「"+x.zh+"」，符合本句語意與句型。</p><h3>⑤ 其他選項為什麼不適合？</h3>"+x.opts.filter(w=>w!==x.word).map(w=>"<p><b>"+w+"</b>＝「"+zhOf(w)+"」，放入本句會使語意或詞性不合。</p>").join("")+"<h3>⑥ 必記文法／搭配</h3><p>"+x.usage+"</p><h3>⑦ 衍生字／相關用法</h3><p>"+x.family+"</p>"}
 function meaningExp(x){return"<h3>正確答案</h3><p><b>"+x.word+"＝"+x.zh+"</b></p><h3>四個選項</h3>"+x.opts.map(z=>"<p>"+z+(z===x.zh?" ✓":"")+"</p>").join("")+"<h3>搭配／相關字</h3><p>"+(x.usage||"—")+"；"+(x.family||"—")+"</p>"}
-function showLog(){document.getElementById("quiz").classList.add("hidden");document.getElementById("log").classList.remove("hidden");const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);document.getElementById("logbody").innerHTML=a.length?a.map(x=>'<div class="logrow"><b>'+names[x.set]+'｜'+x.word+'</b><br><span class="small">題型：'+(x.type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+x.count+' 次｜最近：'+x.last+'</span></div>').join(""):"目前沒有錯題紀錄。"}
-document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{if(confirm("確定清除全部錯題紀錄？")){wrongLog={};localStorage.removeItem("engWrongLogV2");showLog()}}
+function showLog(){document.getElementById("quiz").classList.add("hidden");document.getElementById("log").classList.remove("hidden");wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);document.getElementById("logbody").innerHTML=a.length?a.map(x=>'<div class="logrow"><b>'+names[x.set]+'｜'+x.word+'</b><br><span class="small">題型：'+(x.type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+x.count+' 次｜最近：'+x.last+'</span></div>').join(""):"目前沒有錯題紀錄。"}
+document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{
+  if(sc.value==="ALL"){
+    if(confirm("確定清除所有單元的錯題紀錄？")){
+      for(const set of order)localStorage.removeItem(storageKey(set));
+      wrongLog={};showLog();
+    }
+  }else{
+    if(confirm("確定清除 "+names[sc.value]+" 的錯題紀錄？")){
+      localStorage.removeItem(storageKey(sc.value));
+      wrongLog={};showLog();
+    }
+  }
+}
 </script></body></html>
