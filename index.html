@@ -28,7 +28,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;ma
 <button class="primary" id="start">開始測驗</button><button id="retry">錯題重考</button><button id="showlog">錯題紀錄</button>
 </div></div>
 <div id="quiz" class="card hidden"><div class="stats"><span id="progress" class="pill"></span><span id="score" class="pill"></span><span id="wrongc" class="pill"></span></div><div id="q" class="q"></div><div id="opts"></div><div id="exp" class="ex hidden"></div><button id="next" class="primary hidden">下一題</button></div>
-<div id="log" class="card hidden"><div class="row"><h2 style="margin-right:auto">錯題紀錄</h2><button class="danger" id="clearlog">清除全部錯題紀錄</button></div><div id="logbody"></div></div>
+<div id="log" class="card hidden"><div class="row"><h2 style="margin-right:auto">錯題紀錄</h2><button id="exportCsv">匯出 CSV</button><button id="printWrong">列印／存 PDF</button><button class="danger" id="clearlog">清除全部錯題紀錄</button></div><div id="logbody"></div></div>
 <div id="dashboard" class="card hidden"><div class="row"><h2 style="margin-right:auto">個人學習紀錄</h2><button id="dashboardClose">關閉</button></div><div id="dashBody"></div></div>
 <div class="card small">錯題依單元分開保存在目前瀏覽器。選擇任一 U01–U24、L01–L09 或 R01–R03 後，可單獨查看與重考該單元錯題；答錯後會持續保留，直到您自行清除該單元紀錄。</div>
 </div><script>
@@ -173,7 +173,54 @@ function showLog(){
     '</div>'
   }).join(""):"目前沒有錯題紀錄。";
 }
-document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{
+
+function getWrongExportRows(){
+  wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);
+  return Object.values(wrongLog).sort((a,b)=>String(a.set).localeCompare(String(b.set))||String(a.word).localeCompare(String(b.word))).map(x=>{
+    const e=(D[x.set]||[]).find(z=>z[0]===x.word);
+    return {
+      unit:names[x.set]||x.set,
+      word:x.word,
+      zh:e?.[1]||"—",
+      question:x.type==="sentence"?(e?.[2]||"—"):('「'+x.word+'」的中文意思是？'),
+      type:x.type==="sentence"?"句子選字":"英翻中",
+      count:x.count||0,
+      last:x.last||""
+    };
+  });
+}
+function csvEscape(v){
+  v=String(v??"");
+  return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+}
+function exportWrongCsv(){
+  const rows=getWrongExportRows();
+  if(!rows.length){alert("目前沒有錯題紀錄可匯出");return}
+  const header=["單元","英文單字","中文意思","原本錯的題目","題型","答錯次數","最近答錯時間"];
+  const lines=[header,...rows.map(r=>[r.unit,r.word,r.zh,r.question,r.type,r.count,r.last])].map(row=>row.map(csvEscape).join(","));
+  const blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  const scopeName=sc.value==="ALL"?"全部單元":sc.value;
+  a.download="英文單字錯題紀錄_"+scopeName+".csv";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function printWrongLog(){
+  const rows=getWrongExportRows();
+  if(!rows.length){alert("目前沒有錯題紀錄可列印");return}
+  const w=window.open("","_blank");
+  const body=rows.map(r=>'<div style="padding:12px 0;border-bottom:1px solid #ddd">'+
+    '<h3 style="margin:0 0 6px">'+r.unit+'｜'+r.word+'</h3>'+
+    '<div><b>中文意思：</b>'+r.zh+'</div>'+
+    '<div><b>原本錯的題目：</b>'+r.question+'</div>'+
+    '<div><b>題型：</b>'+r.type+'</div>'+
+    '<div><b>答錯次數：</b>'+r.count+' 次</div>'+
+    '<div><b>最近答錯時間：</b>'+r.last+'</div></div>').join("");
+  w.document.write('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>錯題紀錄</title><style>body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;margin:32px;color:#111827}h1{margin-bottom:18px}@media print{button{display:none}}</style></head><body><h1>英文單字錯題紀錄</h1>'+body+'<script>window.onload=()=>window.print()<\/script></body></html>');
+  w.document.close();
+}
+
+document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("exportCsv").onclick=exportWrongCsv;document.getElementById("printWrong").onclick=printWrongLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{
   if(sc.value==="ALL"){
     if(confirm("確定清除所有單元的錯題紀錄？")){
       for(const set of order)localStorage.removeItem(storageKey(set));
