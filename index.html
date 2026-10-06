@@ -2,7 +2,7 @@
 <style>
 body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;margin:0;background:#f6f7fb;color:#1f2937}.wrap{max-width:980px;margin:auto;padding:22px}.card{background:white;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 3px 16px #00000010}h1{margin:0 0 8px;font-size:28px}h2{font-size:20px}.muted{color:#6b7280}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}select,button{font-size:16px;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:white}button{cursor:pointer}.primary{background:#2563eb;color:white;border-color:#2563eb}.danger{background:#fff1f2;color:#be123c}.pill{background:#eef2ff;border-radius:999px;padding:8px 11px}.stats{display:flex;gap:8px;flex-wrap:wrap}.q{font-size:22px;line-height:1.55;margin:18px 0}.opt{width:100%;display:block;text-align:left;padding:14px;margin:9px 0;border-radius:12px;border:1px solid #d1d5db;background:#fff}.correct{background:#dcfce7!important;border-color:#16a34a!important}.wrong{background:#fee2e2!important;border-color:#dc2626!important}.hidden{display:none}.ex h3{margin:14px 0 5px}.ex p{line-height:1.65;margin:5px 0}.badge{display:inline-block;padding:5px 9px;border-radius:8px;background:#f3f4f6;margin:3px}.logrow{border-top:1px solid #eee;padding:10px 0}.small{font-size:14px;color:#6b7280}
 </style></head><body><div class="wrap">
-<div class="card"><h1>英文單字線上總題庫</h1><p class="muted">常春藤 Level 3 U01–U24 ＋ L01 / L02 / L03 / R01。U01–U24 已依三份原書核對版完整重建；原書可直接挖空的句子使用原書例句，少數無法直接出題者標示為「練習新編句」。</p></div>
+<div class="card"><h1>英文單字線上總題庫</h1><p class="muted">常春藤 Level 3 U01–U24 ＋ L01 / L02 / L03 / R01。U01–U24 已依三份原書核對版完整重建，共 1,068 筆。</p></div>
 <div class="card"><div class="row">
 <label>範圍 <select id="scope"></select></label>
 <label>題型 <select id="mode"><option value="sentence">句子選字</option><option value="meaning">英翻中</option><option value="mixed">混合</option></select></label>
@@ -73,20 +73,13 @@ function meaningPool(){return flat().map(z=>[z.e[0],z.e[1]])}
 function makeQ(set,e,type){
  if(type==="sentence"){
    if(!e[2]) return null;
-   const answer=e[6]||e[0];
-   const candidates=shuffle(flat().filter(z=>z.e[0]!==e[0]&&z.e[2])).slice(0,3);
-   const displays=candidates.map(z=>z.e[6]||z.e[0]);
-   const optZh={}; optZh[answer]=e[1];
-   candidates.forEach((z,idx)=>{optZh[displays[idx]]=z.e[1]});
-   return{
-     set,type,word:e[0],answer,zh:e[1],q:e[2],trans:e[3],usage:e[4],
-     pos:e[5]||"",fullExample:e[7]||"",sourceType:e[8]||"原書例句",
-     opts:shuffle([answer,...displays]),optZh
-   }
+   const targetSurface=e[6]||e[0];
+   const candidates=flat().filter(z=>z.e[0]!==e[0]&&z.e[2]);
+   const ds=shuffle(candidates).slice(0,3).map(z=>z.e[6]||z.e[0]);
+   return{set,type,word:e[0],answer:targetSurface,zh:e[1],q:e[2],trans:e[3],usage:e[4],pos:e[5],surface:e[6]||e[0],example:e[7]||"",source:e[8]||"練習句",family:e[4],opts:shuffle([targetSurface,...ds])}
  }
  const mp=meaningPool(),ds=shuffle(mp.filter(z=>z[0]!==e[0])).slice(0,3).map(z=>z[1]);
- return{set,type,word:e[0],zh:e[1],q:e[0],usage:e[4],pos:e[5]||"",sourceType:e[8]||"教材",
-        opts:shuffle([e[1],...ds])}
+ return{set,type,word:e[0],answer:e[1],zh:e[1],q:e[0],usage:e[4],pos:e[5],surface:e[6]||e[0],example:e[7]||"",source:e[8]||"",family:e[4],opts:shuffle([e[1],...ds])}
 }
 function selectedEntries(){const s=sc.value;return(s==="ALL"?flat():D[s].map(e=>({set:s,e})))}
 function start(retry=false){
@@ -111,26 +104,34 @@ function answer(v,b){if(locked)return;locked=true;const x=quiz[i],ans=x.type==="
   wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);
 }
  const ex=document.getElementById("exp");ex.innerHTML=x.type==="sentence"?sentenceExp(x):meaningExp(x);ex.classList.remove("hidden");document.getElementById("next").classList.remove("hidden");stats()}
-function zhOf(w){for(const z of flat())if(z.e[0]===w||z.e[6]===w)return z.e[1];return"—"}
+function zhOf(w){
+ for(const z of flat()){
+   if(z.e[0]===w || (z.e[6]&&z.e[6]===w)) return z.e[1];
+ }
+ return "—"
+}
 function sentenceExp(x){
  const L=["A","B","C","D"];
- const full=x.q.replace("______","<b>"+x.answer+"</b>");
- const optionLines=x.opts.map((w,j)=>"<p>"+L[j]+". "+w+"＝"+(x.optZh?.[w]||zhOf(w))+"</p>").join("");
- const others=x.opts.filter(w=>w!==x.answer).map(w=>"<p><b>"+w+"</b>＝「"+(x.optZh?.[w]||zhOf(w))+"」，與本句的語意、詞性或搭配不符。</p>").join("");
+ const full=x.example||x.q.replace("______","<b>"+x.answer+"</b>");
  return "<h3>① 完整英文句</h3><p>"+full+"</p>"+
- "<p class='small'>句子來源："+x.sourceType+"</p>"+
  "<h3>② 完整中文翻譯</h3><p>"+x.trans+"</p>"+
- "<h3>③ A/B/C/D 中文意思</h3>"+optionLines+
- "<h3>④ 為什麼正確答案適合？</h3><p><b>"+x.answer+"</b>（原形："+x.word+"）＝「"+x.zh+"」，符合本句的語意、詞性與搭配。</p>"+
- "<h3>⑤ 其他選項為什麼不適合？</h3>"+others+
+ "<h3>③ A/B/C/D 中文意思</h3>"+
+ x.opts.map((w,j)=>"<p>"+L[j]+". "+w+"＝"+zhOf(w)+"</p>").join("")+
+ "<h3>④ 為什麼正確答案適合？</h3><p><b>"+x.answer+"</b> 是本句需要的正確字形；原形為 <b>"+x.word+"</b>，意思是「"+x.zh+"」。</p>"+
+ "<h3>⑤ 其他選項為什麼不適合？</h3>"+
+ x.opts.filter(w=>w!==x.answer).map(w=>"<p><b>"+w+"</b>＝「"+zhOf(w)+"」，與本句語意、詞性或句型不符。</p>").join("")+
  "<h3>⑥ 必記文法／搭配</h3><p>"+(x.usage||"—")+"</p>"+
- "<h3>⑦ 衍生字／相關用法</h3><p>"+(x.usage||"—")+"</p>";
+ "<h3>⑦ 衍生字／相關用法</h3><p>"+(x.usage||"—")+"</p>"+
+ "<p class=\"small\">句子來源："+x.source+"</p>"
 }
 function meaningExp(x){
  return "<h3>正確答案</h3><p><b>"+x.word+"＝"+x.zh+"</b></p>"+
  "<h3>四個選項</h3>"+x.opts.map(z=>"<p>"+z+(z===x.zh?" ✓":"")+"</p>").join("")+
  "<h3>詞性</h3><p>"+(x.pos||"—")+"</p>"+
- "<h3>重要用法／衍生字</h3><p>"+(x.usage||"—")+"</p>";
+ "<h3>重要用法／衍生字</h3><p>"+(x.usage||"—")+"</p>"+
+ "<h3>例句</h3><p>"+(x.example||"—")+"</p>"+
+ "<h3>中文翻譯</h3><p>"+(x.trans||"—")+"</p>"+
+ (x.source?"<p class=\"small\">句子來源："+x.source+"</p>":"")
 }
 function showLog(){document.getElementById("quiz").classList.add("hidden");document.getElementById("log").classList.remove("hidden");wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);document.getElementById("logbody").innerHTML=a.length?a.map(x=>'<div class="logrow"><b>'+names[x.set]+'｜'+x.word+'</b><br><span class="small">題型：'+(x.type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+x.count+' 次｜最近：'+x.last+'</span></div>').join(""):"目前沒有錯題紀錄。"}
 document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{
