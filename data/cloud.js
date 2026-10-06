@@ -119,7 +119,21 @@ async function showDashboard(){
     const x=pm[u]||{};const total=x.questions_answered||0,rate=total?Math.round((x.correct_answers||0)/total*100):0;
     const wrongs=(wm[u]||[]).sort((a,b)=>b.wrong_count-a.wrong_count);
     const wrongHtml=wrongs.length
-      ? '<div style="margin-top:8px"><b>錯題明細：</b>'+wrongs.map(z=>'<div class="small" style="padding:5px 0">• <b>'+z.word+'</b>｜'+(z.question_type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+z.wrong_count+' 次｜最近 '+new Date(z.last_wrong_at).toLocaleString()+'</div>').join("")+'</div>'
+      ? '<div style="margin-top:10px"><b>錯題明細：</b>'+wrongs.map(z=>{
+          const e=(D[z.unit_code]||[]).find(row=>row[0]===z.word);
+          const zh=e?.[1]||"—";
+          const q=z.question_type==="sentence"
+            ? (e?.[2]||"—")
+            : ('「'+z.word+'」的中文意思是？');
+          return '<div style="padding:10px 0;border-top:1px dashed #e5e7eb">'+
+            '<div><b>'+z.word+'</b></div>'+
+            '<div class="small"><b>中文意思：</b>'+zh+'</div>'+
+            '<div class="small"><b>原本錯的題目：</b>'+q+'</div>'+
+            '<div class="small"><b>題型：</b>'+(z.question_type==="sentence"?"句子選字":"英翻中")+'</div>'+
+            '<div class="small"><b>答錯次數：</b>'+z.wrong_count+' 次</div>'+
+            '<div class="small"><b>最近答錯時間：</b>'+new Date(z.last_wrong_at).toLocaleString()+'</div>'+
+          '</div>'
+        }).join("")+'</div>'
       : '<div class="small" style="margin-top:8px">目前沒有錯題。</div>';
     return '<div class="logrow"><b>'+names[u]+'</b><br><span class="small">測驗 '+(x.attempts_count||0)+' 次｜累計 '+total+' 題｜總正確率 '+rate+'%｜最高 '+(x.best_score_percent??"—")+'%｜目前錯題 '+wrongs.length+'</span>'+wrongHtml+'</div>'
   }).join("");
