@@ -111,13 +111,17 @@ async function showDashboard(){
   $("dashBody").innerHTML="讀取中…";
   const [{data:p},{data:w}]=await Promise.all([
     sb.from("unit_progress").select("*").eq("user_id",cloudUser.id),
-    sb.from("wrong_answers").select("unit_code,word,wrong_count").eq("user_id",cloudUser.id)
+    sb.from("wrong_answers").select("unit_code,word,question_type,wrong_count,last_wrong_at").eq("user_id",cloudUser.id)
   ]);
   const pm={};for(const x of p||[])pm[x.unit_code]=x;
-  const wm={};for(const x of w||[]){wm[x.unit_code]=(wm[x.unit_code]||0)+1}
+  const wm={};for(const x of w||[]){(wm[x.unit_code]||(wm[x.unit_code]=[])).push(x)}
   const rows=order.filter(u=>pm[u]||wm[u]).map(u=>{
     const x=pm[u]||{};const total=x.questions_answered||0,rate=total?Math.round((x.correct_answers||0)/total*100):0;
-    return '<div class="logrow"><b>'+names[u]+'</b><br><span class="small">測驗 '+(x.attempts_count||0)+' 次｜累計 '+total+' 題｜總正確率 '+rate+'%｜最高 '+(x.best_score_percent??"—")+'%｜目前錯題 '+(wm[u]||0)+'</span></div>'
+    const wrongs=(wm[u]||[]).sort((a,b)=>b.wrong_count-a.wrong_count);
+    const wrongHtml=wrongs.length
+      ? '<div style="margin-top:8px"><b>錯題明細：</b>'+wrongs.map(z=>'<div class="small" style="padding:5px 0">• <b>'+z.word+'</b>｜'+(z.question_type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+z.wrong_count+' 次｜最近 '+new Date(z.last_wrong_at).toLocaleString()+'</div>').join("")+'</div>'
+      : '<div class="small" style="margin-top:8px">目前沒有錯題。</div>';
+    return '<div class="logrow"><b>'+names[u]+'</b><br><span class="small">測驗 '+(x.attempts_count||0)+' 次｜累計 '+total+' 題｜總正確率 '+rate+'%｜最高 '+(x.best_score_percent??"—")+'%｜目前錯題 '+wrongs.length+'</span>'+wrongHtml+'</div>'
   }).join("");
   $("dashBody").innerHTML=rows||"尚無學習紀錄，完成一次測驗後就會顯示。";
 }
