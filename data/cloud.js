@@ -177,3 +177,23 @@ $("clearlog").onclick=async()=>{
 };
 
 (async()=>{const {data:{session}}=await sb.auth.getSession();await handleSession(session);})();
+
+function ensureWrongExportButtons(){
+  const log=document.getElementById("log");
+  if(!log)return;
+  const row=log.querySelector(".row");
+  if(!row)return;
+  if(!document.getElementById("exportCsv")){
+    const b=document.createElement("button");
+    b.id="exportCsv";b.textContent="匯出 CSV";b.onclick=exportWrongCsv;
+    const clear=document.getElementById("clearlog");
+    row.insertBefore(b,clear||null);
+  }
+  if(!document.getElementById("printWrong")){
+    const b=document.createElement("button");
+    b.id="printWrong";b.textContent="列印／存 PDF";b.onclick=printWrongLog;
+    const clear=document.getElementById("clearlog");
+    row.insertBefore(b,clear||null);
+  }
+}
+ensureWrongExportButtons();
