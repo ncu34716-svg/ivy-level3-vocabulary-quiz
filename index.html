@@ -1,8 +1,26 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>英文單字總題庫</title>
 <style>
-body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;margin:0;background:#f6f7fb;color:#1f2937}.wrap{max-width:980px;margin:auto;padding:22px}.card{background:white;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 3px 16px #00000010}h1{margin:0 0 8px;font-size:28px}h2{font-size:20px}.muted{color:#6b7280}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}select,button{font-size:16px;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:white}button{cursor:pointer}.primary{background:#2563eb;color:white;border-color:#2563eb}.danger{background:#fff1f2;color:#be123c}.pill{background:#eef2ff;border-radius:999px;padding:8px 11px}.stats{display:flex;gap:8px;flex-wrap:wrap}.q{font-size:22px;line-height:1.55;margin:18px 0}.opt{width:100%;display:block;text-align:left;padding:14px;margin:9px 0;border-radius:12px;border:1px solid #d1d5db;background:#fff}.correct{background:#dcfce7!important;border-color:#16a34a!important}.wrong{background:#fee2e2!important;border-color:#dc2626!important}.hidden{display:none}.ex h3{margin:14px 0 5px}.ex p{line-height:1.65;margin:5px 0}.badge{display:inline-block;padding:5px 9px;border-radius:8px;background:#f3f4f6;margin:3px}.logrow{border-top:1px solid #eee;padding:10px 0}.small{font-size:14px;color:#6b7280}
+body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;margin:0;background:#f6f7fb;color:#1f2937}.wrap{max-width:980px;margin:auto;padding:22px}.card{background:white;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 3px 16px #00000010}h1{margin:0 0 8px;font-size:28px}h2{font-size:20px}.muted{color:#6b7280}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}select,button,input{font-size:16px;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:white}input{min-width:180px}button{cursor:pointer}.primary{background:#2563eb;color:white;border-color:#2563eb}.danger{background:#fff1f2;color:#be123c}.pill{background:#eef2ff;border-radius:999px;padding:8px 11px}.stats{display:flex;gap:8px;flex-wrap:wrap}.q{font-size:22px;line-height:1.55;margin:18px 0}.opt{width:100%;display:block;text-align:left;padding:14px;margin:9px 0;border-radius:12px;border:1px solid #d1d5db;background:#fff}.correct{background:#dcfce7!important;border-color:#16a34a!important}.wrong{background:#fee2e2!important;border-color:#dc2626!important}.hidden{display:none}.ex h3{margin:14px 0 5px}.ex p{line-height:1.65;margin:5px 0}.badge{display:inline-block;padding:5px 9px;border-radius:8px;background:#f3f4f6;margin:3px}.logrow{border-top:1px solid #eee;padding:10px 0}.small{font-size:14px;color:#6b7280}
 </style></head><body><div class="wrap">
-<div class="card"><h1>英文單字線上總題庫</h1><p class="muted">常春藤 Level 3 U01–U24 ＋ L01–L09 ＋ R01–R03。U01–U24 已依原書核對版完整重建；課本題庫持續整合原檔字彙、片語與辨識字。</p></div>
+<div class="card"><h1>英文單字線上總題庫</h1><p class="muted">常春藤 Level 3 U01–U24 ＋ L01–L09 ＋ R01–R03。登入後可跨裝置同步個人成績、錯題與單元進度。</p></div>
+<div class="card" id="authCard">
+  <div id="authForm">
+    <h2>個人帳號</h2>
+    <div class="row">
+      <input id="authName" placeholder="姓名／暱稱（註冊時填）">
+      <input id="authEmail" type="email" placeholder="Email">
+      <input id="authPassword" type="password" placeholder="密碼（至少 6 碼）">
+      <button id="authSignup">註冊</button>
+      <button class="primary" id="authLogin">登入</button>
+    </div>
+  </div>
+  <div id="authUser" class="hidden row">
+    <b id="authUserText"></b>
+    <button id="dashboardBtn" class="primary hidden">個人學習紀錄</button>
+    <button id="authLogout">登出</button>
+  </div>
+  <p id="authMsg" class="small"></p>
+</div>
 <div class="card"><div class="row">
 <label>範圍 <select id="scope"></select></label>
 <label>題型 <select id="mode"><option value="sentence">句子選字</option><option value="meaning">英翻中</option><option value="mixed">混合</option></select></label>
@@ -11,6 +29,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;ma
 </div></div>
 <div id="quiz" class="card hidden"><div class="stats"><span id="progress" class="pill"></span><span id="score" class="pill"></span><span id="wrongc" class="pill"></span></div><div id="q" class="q"></div><div id="opts"></div><div id="exp" class="ex hidden"></div><button id="next" class="primary hidden">下一題</button></div>
 <div id="log" class="card hidden"><div class="row"><h2 style="margin-right:auto">錯題紀錄</h2><button class="danger" id="clearlog">清除全部錯題紀錄</button></div><div id="logbody"></div></div>
+<div id="dashboard" class="card hidden"><div class="row"><h2 style="margin-right:auto">個人學習紀錄</h2><button id="dashboardClose">關閉</button></div><div id="dashBody"></div></div>
 <div class="card small">錯題依單元分開保存在目前瀏覽器。選擇任一 U01–U24、L01–L09 或 R01–R03 後，可單獨查看與重考該單元錯題；答錯後會持續保留，直到您自行清除該單元紀錄。</div>
 </div><script>
 const D={
@@ -147,4 +166,4 @@ document.getElementById("start").onclick=()=>start(false);document.getElementByI
     }
   }
 }
-</script></body></html>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="data/cloud.js"></script></body></html>
