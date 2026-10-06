@@ -152,7 +152,27 @@ function meaningExp(x){
  "<h3>中文翻譯</h3><p>"+(x.trans||"—")+"</p>"+
  (x.source?"<p class=\"small\">句子來源："+x.source+"</p>":"")
 }
-function showLog(){document.getElementById("quiz").classList.add("hidden");document.getElementById("log").classList.remove("hidden");wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);document.getElementById("logbody").innerHTML=a.length?a.map(x=>'<div class="logrow"><b>'+names[x.set]+'｜'+x.word+'</b><br><span class="small">題型：'+(x.type==="sentence"?"句子選字":"英翻中")+'｜答錯 '+x.count+' 次｜最近：'+x.last+'</span></div>').join(""):"目前沒有錯題紀錄。"}
+function showLog(){
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("log").classList.remove("hidden");
+  wrongLog=sc.value==="ALL"?loadAllWrong():loadUnitWrong(sc.value);
+  const a=Object.values(wrongLog).sort((a,b)=>b.count-a.count);
+  document.getElementById("logbody").innerHTML=a.length?a.map(x=>{
+    const e=(D[x.set]||[]).find(z=>z[0]===x.word);
+    const zh=e?.[1]||"—";
+    const originalQ=x.type==="sentence"
+      ? (e?.[2]||"—")
+      : ('「'+x.word+'」的中文意思是？');
+    return '<div class="logrow">'+
+      '<div style="font-size:18px"><b>'+names[x.set]+'｜'+x.word+'</b></div>'+
+      '<div class="small" style="margin-top:6px"><b>中文意思：</b>'+zh+'</div>'+
+      '<div class="small" style="margin-top:4px"><b>原本錯的題目：</b>'+originalQ+'</div>'+
+      '<div class="small" style="margin-top:4px"><b>題型：</b>'+(x.type==="sentence"?"句子選字":"英翻中")+'</div>'+
+      '<div class="small" style="margin-top:4px"><b>答錯次數：</b>'+x.count+' 次</div>'+
+      '<div class="small" style="margin-top:4px"><b>最近答錯時間：</b>'+x.last+'</div>'+
+    '</div>'
+  }).join(""):"目前沒有錯題紀錄。";
+}
 document.getElementById("start").onclick=()=>start(false);document.getElementById("retry").onclick=()=>start(true);document.getElementById("showlog").onclick=showLog;document.getElementById("next").onclick=()=>{i++;render()};document.getElementById("clearlog").onclick=()=>{
   if(sc.value==="ALL"){
     if(confirm("確定清除所有單元的錯題紀錄？")){
